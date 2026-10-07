@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: churn-api}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: churn-api}}
+  template:
+    metadata: {labels: {app: churn-api}}
+    spec:
+      containers:
+      - name: api
+        image: ghcr.io/YOUR_USER/churn-api:latest
+        ports: [{containerPort: 8080}]
+        readinessProbe: {httpGet: {path: /health, port: 8080}, initialDelaySeconds: 3}
+        livenessProbe: {httpGet: {path: /health, port: 8080}, periodSeconds: 10}
+        resources: {requests: {cpu: 250m, memory: 256Mi}, limits: {cpu: "1", memory: 512Mi}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: churn-api}
+spec: {selector: {app: churn-api}, ports: [{port: 80, targetPort: 8080}]}
